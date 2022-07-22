@@ -193,27 +193,24 @@ var InlineCssColor = function (application) {
 }
 
 /**
- * @param {vscode.ExtensionContext} _context
+ * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
-	console.log('active');
+
 	var application = new Application(context);
 	var inlineCssColor = new InlineCssColor(application);
-	//application.cacheDocumentInfo(); //cache lines on doc open | update cache lines on text change
-	
-	//need to color lines every time the tab is focused so use focus event instead open
-	application.on('documentFocus', function (document) {
-		if (inlineCssColor.isValidDocType()) {
-			inlineCssColor.colorLines();
-		}
-	})
-	application.on('documentTextChange', function (e, lineStart, lineEnd) {
-		if (inlineCssColor.isValidDocType()) {
-			inlineCssColor.colorLines();
-		}
-	})
 
-	application.activate(); //call last so any registered events are emitted
+	application.on('documentFocus', function () {
+		if (inlineCssColor.isValidDocType()) {
+			inlineCssColor.colorLines();
+		}
+	})
+	application.on('documentTextChange', function () {
+		if (inlineCssColor.isValidDocType()) {
+			inlineCssColor.colorLines();
+		}
+	})
+	application.activate();
 }
 
 // this method is called when your extension is deactivated
