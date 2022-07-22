@@ -37,6 +37,7 @@ var InlineCssColor = function (application) {
 	this.colorLines = function () {
 
 		let lines = application.getDocumentLinesInfo();
+
 		let editor = application.editor();
 		let keyWordRanges = [];
 		let punctuationRanges = [];

@@ -102,5 +102,11 @@
 		"glob": "^8.0.1",
 		"mocha": "^9.2.2",
 		"typescript": "^4.6.4"
+	},
+	"__metadata": {
+		"id": "f57f5ef0-200a-4eb4-af88-1a0b96d6d8fb",
+		"publisherDisplayName": "outofsync42",
+		"publisherId": "5b357866-64ca-4aee-92e0-be55ff869996",
+		"isPreReleaseVersion": false
 	}
 }
