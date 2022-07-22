@@ -16,7 +16,7 @@ Inline CSS style="" value colors match theme.
 
 # Configuration
 
-First you will want you will want get the current the colors for you existing theme. To this is press "CTRL+Shift+P" and type in "Inspect".
+First you will want you will want get the current the colors for your existing theme. To do this is press "CTRL+Shift+P" and type in "Inspect".
 Select "Developer: Inspect Editor Tokens and Scopes"
 
 ![Command Palette](https://raw.githubusercontent.com/outofsync42/inline-css-color/master/images/command-palette-inspect.png)
@@ -24,3 +24,18 @@ Select "Developer: Inspect Editor Tokens and Scopes"
 Then click on the text you want to see its token information. Locate the "foreground" property and copy the hex color code
 
 ![Token Inspect](https://raw.githubusercontent.com/outofsync42/inline-css-color/master/images/token-color.png)
+
+After getting your colors open your settings.json file and add them to the "workbench.colorCustomizations" object.
+
+![Token Inspect](https://raw.githubusercontent.com/outofsync42/inline-css-color/master/images/settings.png)
+
+```
+"workbench.colorCustomizations" : {
+		"inline.css.keyword": "#0000ff",
+		"inline.css.punctuation": "#fff",
+		"inline.css.supportFunction": "#000",
+		"inline.css.valueConstant": "#000",
+		"inline.css.valueNumeric": "#EE8484",
+		"inline.css.string": "#63ECF1",
+}
+```
