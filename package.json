@@ -9,7 +9,7 @@
 		"type": "GitHub",
 		"url": "https://github.com/outofsync42/inline-css-color"
 	},
-	"icon": "./images/icon.png",
+	"icon": "icon.png",
 	"engines": {
 		"vscode": "^1.69.0"
 	},
