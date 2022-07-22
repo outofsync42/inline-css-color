@@ -31,11 +31,11 @@ After getting your colors open your settings.json file and add them to the "work
 
 ```
 "workbench.colorCustomizations" : {
-		"inline.css.keyword": "#0000ff",
-		"inline.css.punctuation": "#fff",
-		"inline.css.supportFunction": "#000",
-		"inline.css.valueConstant": "#000",
-		"inline.css.valueNumeric": "#EE8484",
-		"inline.css.string": "#63ECF1",
+	"inline.css.keyword": "#0000ff",
+	"inline.css.punctuation": "#fff",
+	"inline.css.supportFunction": "#000",
+	"inline.css.valueConstant": "#000",
+	"inline.css.valueNumeric": "#EE8484",
+	"inline.css.string": "#63ECF1",
 }
 ```
