@@ -16,3 +16,7 @@ Inline CSS style="" value colors match theme.
 
 # Configuration
 
+First you will want you will want get the current the colors for you existing theme. To this is press "CTRL+Shift+P" and type in "Inspect".
+Select "Developer: Inspect Editor Tokens and Scopes"
+
+![Example](https://raw.githubusercontent.com/outofsync42/inline-css-color/master/images/command-palette-inspect.png)
