@@ -2,14 +2,14 @@
 	"name": "inline-css-color",
 	"displayName": "Inline CSS Color",
 	"description": "Color your inline html style=\"\" values to match your css theme.",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"publisher": "outofsync42",
 	"license": "MIT",
 	"repository": {
 		"type": "GitHub",
 		"url": "https://github.com/outofsync42/inline-css-color"
 	},
-	"icon": "icon.png",
+	"icon": "img/icon.png",
 	"engines": {
 		"vscode": "^1.69.0"
 	},

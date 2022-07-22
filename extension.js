@@ -200,7 +200,7 @@ function activate(context) {
 
 	var application = new Application(context);
 	var inlineCssColor = new InlineCssColor(application);
-
+	//application.updateCacheOnTextChange();
 	application.on('documentFocus', function () {
 		if (inlineCssColor.isValidDocType()) {
 			inlineCssColor.colorLines();
