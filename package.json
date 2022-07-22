@@ -1,0 +1,105 @@
+{
+	"name": "inline-css-color",
+	"displayName": "Inline CSS Color",
+	"description": "Colors your html inline CSS",
+	"version": "1.0.0",
+	"publisher": "outofsync42",
+	"license": "MIT",
+	"engines": {
+		"vscode": "^1.69.0"
+	},
+	"categories": [
+		"Formatters",
+		"Visualization",
+		"Other"
+	],
+	"activationEvents": [
+		"onLanguage:php",
+		"onLanguage:html"
+	],
+	"main": "./extension.js",
+	"contributes": {
+		"colors": [
+			{
+				"id": "inline.css.keyword",
+				"description": "Color for inline css keyword.",
+				"defaults": {
+					"dark": "#0000ff",
+					"light": "#0000ff",
+					"highContrast": "#0000ff",
+					"highContrastLight": "#0000ff"
+				}
+			},
+			{
+				"id": "inline.css.punctuation",
+				"description": "Color for inline css punctuation.",
+				"defaults": {
+					"dark": "#fff",
+					"light": "#fff",
+					"highContrast": "#fff",
+					"highContrastLight": "#fff"
+				}
+			},
+			{
+				"id": "inline.css.supportFunction",
+				"description": "Color for inline css support functions. ex. rgb()",
+				"defaults": {
+					"dark": "#000",
+					"light": "#000",
+					"highContrast": "#000",
+					"highContrastLight": "#000"
+				}
+			},
+			{
+				"id": "inline.css.valueConstant",
+				"description": "Color for inline css constant value. ex white",
+				"defaults": {
+					"dark": "#000",
+					"light": "#000",
+					"highContrast": "#000",
+					"highContrastLight": "#000"
+				}
+			},
+			{
+				"id": "inline.css.valueNumeric",
+				"description": "Color for inline css numeric value. ex. 10px",
+				"defaults": {
+					"dark": "#EE8484",
+					"light": "#EE8484",
+					"highContrast": "#EE8484",
+					"highContrastLight": "#EE8484"
+				}
+			},
+			{
+				"id": "inline.css.string",
+				"description": "Color for inline css string value. ex 'arial'",
+				"defaults": {
+					"dark": "#63ECF1",
+					"light": "#63ECF1",
+					"highContrast": "#63ECF1",
+					"highContrastLight": "#63ECF1"
+				}
+			}
+		]
+	},
+	"scripts": {
+		"lint": "eslint .",
+		"pretest": "npm run lint",
+		"test": "node ./test/runTest.js"
+	},
+	"devDependencies": {
+		"@types/glob": "^7.2.0",
+		"@types/mocha": "^9.1.1",
+		"@types/node": "14.x",
+		"@types/vscode": "^1.69.0",
+		"@vscode/test-electron": "^2.1.3",
+		"eslint": "^8.14.0",
+		"glob": "^8.0.1",
+		"mocha": "^9.2.2",
+		"typescript": "^4.6.4"
+	},
+	"dependencies": {
+		"axios": "^0.27.2",
+		"webview": "^1.0.0"
+	}
+}
