@@ -1,4 +1,3 @@
-const { isSet } = require('util/types');
 const vscode = require('vscode');
 const Application = require('./lib/application');
 
@@ -36,113 +35,41 @@ var InlineCssColor = function (application) {
 		color: new vscode.ThemeColor('inline.css.string'),
 	})
 
-	let linesSet = {};
-
-	let fullSweep = true;
+	let ranges = {
+		keywords: {},
+		punctuation: {},
+		supportFunction: {},
+		valueConstant: {},
+		valueNumeric: {},
+		string: {},
+	}
 
 	this.colorLines = function (startLine, endLine, diff) {
 
-		let lines = application.getDocumentLinesInfo();
-		diff = isset(diff) ? diff : null;
-		//console.log(lines);
-		if (fullSweep == false) {
-			if (diff===null || diff < 0) {
-				let currentIds = [];
-				var deleteIds = [];
-				for (var i in lines) {
-					if (lines[i]['syntax'] == 'html') {
-						currentIds[lines[i]['id']] = true;
-					}
-				}
-				for (var i in linesSet) {
-					if (isset(currentIds[linesSet[i]['id']]) == false) {
-						deleteIds.push(linesSet[i]['id']);
-					}
-				}
-
-				for (var i in deleteIds) {
-					linesSet[deleteIds[i]]['keywords']['decorator'].dispose();
-					linesSet[deleteIds[i]]['punctuation']['decorator'].dispose();
-					linesSet[deleteIds[i]]['valueConstant']['decorator'].dispose();
-					linesSet[deleteIds[i]]['valueNumeric']['decorator'].dispose();
-					linesSet[deleteIds[i]]['supportFunction']['decorator'].dispose();
-					linesSet[deleteIds[i]]['string']['decorator'].dispose();
-					delete linesSet[deleteIds[i]];
-				}
-			}
-		}
-
 		let editor = application.editor();
-		let keyWordRanges = [];
-		let punctuationRanges = [];
-		let supportFunctionRanges = [];
-		let valueConstantRanges = [];
-		let valueNumericRanges = [];
-		let stringRanges = [];
+
+		let lines = application.getDocumentLinesInfo();
+
+		diff = isset(diff) ? diff : 0;
 
 		startLine = is_int(startLine) ? startLine : 0
 		endLine = is_int(endLine) ? endLine : lines.length - 1; //inclusive
 
+		let validIds = {}; //more performant to index rather than use array
 		for (var i in lines) {
-			if (fullSweep || (i >= startLine && i <= endLine)) {
-				if (lines[i]['syntax'] == 'html') {
+			if (lines[i]['syntax'] == 'html') {
+				let line_id = lines[i]['id'];
+				validIds[line_id] = 0;
+				if ((i >= startLine && i <= endLine)) {
 
-					let id = lines[i]['id'];
-					if (fullSweep == false) {
-						if (isset(linesSet[id]) == false) {
-							linesSet[id] = {
-								id: id,
-								keywords: {
-									decorator: vscode.window.createTextEditorDecorationType({
-										color: new vscode.ThemeColor('inline.css.keyword'),
-									}),
-									range: []
-								},
-								punctuation: {
-									decorator: vscode.window.createTextEditorDecorationType({
-										color: new vscode.ThemeColor('inline.css.punctuation'),
-									}),
-									range: []
-								},
-								valueConstant: {
-									decorator: vscode.window.createTextEditorDecorationType({
-										color: new vscode.ThemeColor('inline.css.valueConstant'),
-									}),
-									range: []
-								},
-								valueNumeric: {
-									decorator: vscode.window.createTextEditorDecorationType({
-										color: new vscode.ThemeColor('inline.css.valueNumeric'),
-									}),
-									range: []
-								},
-								supportFunction: {
-									decorator: vscode.window.createTextEditorDecorationType({
-										color: new vscode.ThemeColor('inline.css.supportFunction'),
-									}),
-									range: []
-								},
-								string: {
-									decorator: vscode.window.createTextEditorDecorationType({
-										color: new vscode.ThemeColor('inline.css.string'),
-									}),
-									range: []
-								},
-							}
-						} else {
-							linesSet[id]['keywords']['range'] = [];
-							linesSet[id]['punctuation']['range'] = [];
-							linesSet[id]['valueConstant']['range'] = [];
-							linesSet[id]['valueNumeric']['range'] = [];
-							linesSet[id]['supportFunction']['range'] = [];
-							linesSet[id]['string']['range'] = [];
-						}
+					for (var type in ranges) {
+						ranges[type][line_id] = [];
 					}
+
 					let elements = lines[i]['html']['elements'];
 					for (var o in elements) {
 						let style = elements[o]['attributes']['style'];
 						if (style) {
-
 
 							let line = style['line'];
 							let text = lines[line]['text'];
@@ -185,40 +112,22 @@ var InlineCssColor = function (application) {
 									let supportFunction = false;
 									if (text.indexOf(/:| :|  :/, x) == x) {
 										if (constStart) {
-											if (fullSweep == false) {
-												linesSet[id]['keywords']['range'].push(new vscode.Range(line, constStart, line, x));
-											} else {
-												keyWordRanges.push(new vscode.Range(line, constStart, line, x));
-											}
+											ranges['keywords'][line_id].push(new vscode.Range(line, constStart, line, x));
 											inMatch = false;
 											constStart = null;
 										}
-										if (fullSweep == false) {
-											linesSet[id]['punctuation']['range'].push(new vscode.Range(line, x, line, x + 1));
-										} else {
-											punctuationRanges.push(new vscode.Range(line, x, line, x + 1));
-										}
+										ranges['punctuation'][line_id].push(new vscode.Range(line, x, line, x + 1));
 									} else if (text.indexOf(/[),=]/, x) == x) {
-										if (fullSweep == false) {
-											linesSet[id]['punctuation']['range'].push(new vscode.Range(line, x, line, x + 1));
-										} else {
-											punctuationRanges.push(new vscode.Range(line, x, line, x + 1));
-										}
+										ranges['punctuation'][line_id].push(new vscode.Range(line, x, line, x + 1));
 										valueEnd = true;
 									} else if (text.indexOf(/[\(]/, x) == x) {
-										if (fullSweep == false) {
-											linesSet[id]['punctuation']['range'].push(new vscode.Range(line, x, line, x + 1));
-										} else {
-											punctuationRanges.push(new vscode.Range(line, x, line, x + 1));
-										}
+										ranges['punctuation'][line_id].push(new vscode.Range(line, x, line, x + 1));
 										valueEnd = true;
 										supportFunction = true;
 									} else if (text.indexOf(/[;]/, x) == x) {
-										if (fullSweep == false) {
-											linesSet[id]['punctuation']['range'].push(new vscode.Range(line, x, line, x + 1));
-										} else {
-											punctuationRanges.push(new vscode.Range(line, x, line, x + 1));
-										}
+
+										ranges['punctuation'][line_id].push(new vscode.Range(line, x, line, x + 1));
+
 										valueEnd = true;
 									} else if (text.indexOf(/[ ]/, x) == x) {
 										valueEnd = true;
@@ -254,81 +163,69 @@ var InlineCssColor = function (application) {
 									if (valueEnd) {
 										inMatch = false;
 										if (stringStart) {
-											if (fullSweep == false) {
-												linesSet[id]['string']['range'].push(new vscode.Range(line, stringStart, line, x));
-											} else {
-												stringRanges.push(new vscode.Range(line, stringStart, line, x));
-											}
+											ranges['string'][line_id].push(new vscode.Range(line, stringStart, line, x));
 											stringStart = null;
 										}
 										if (numericStart) {
-											if (fullSweep == false) {
-												linesSet[id]['valueNumeric']['range'].push(new vscode.Range(line, numericStart, line, x));
-											} else {
-												valueNumericRanges.push(new vscode.Range(line, numericStart, line, x));
-											}
+											ranges['valueNumeric'][line_id].push(new vscode.Range(line, numericStart, line, x));
 											numericStart = null;
 										}
 										if (constStart) {
 											if (supportFunction) {
 												supportFunction = false;
-												if (fullSweep == false) {
-													linesSet[id]['supportFunction']['range'].push(new vscode.Range(line, constStart, line, x));
-												} else {
-													supportFunctionRanges.push(new vscode.Range(line, constStart, line, x));
-												}
+												ranges['supportFunction'][line_id].push(new vscode.Range(line, constStart, line, x));
 											} else {
-												if (fullSweep == false) {
-													linesSet[id]['valueConstant']['range'].push(new vscode.Range(line, constStart, line, x));
-												} else {
-													valueConstantRanges.push(new vscode.Range(line, constStart, line, x));
-												}
+												ranges['valueConstant'][line_id].push(new vscode.Range(line, constStart, line, x));
 											}
 											constStart = null;
 										}
 									}
 								}
-
 								x++;
 							}
-
 						}
 					}
-					if (fullSweep == false) {
 
-						
+				}
 
-						editor.setDecorations(linesSet[id]['keywords']['decorator'], linesSet[id]['keywords']['range']);
-						editor.setDecorations(linesSet[id]['punctuation']['decorator'], linesSet[id]['punctuation']['range']);
-						editor.setDecorations(linesSet[id]['valueConstant']['decorator'], linesSet[id]['valueConstant']['range']);
-						editor.setDecorations(linesSet[id]['valueNumeric']['decorator'], linesSet[id]['valueNumeric']['range']);
-						editor.setDecorations(linesSet[id]['supportFunction']['decorator'], linesSet[id]['supportFunction']['range']);
-						editor.setDecorations(linesSet[id]['string']['decorator'], linesSet[id]['string']['range']);
+				if (i > endLine) {
+					if (diff !== 0) {
+						for (var type in ranges) {
+							for (var o in ranges[type][line_id]) {
+								ranges[type][line_id][o]['_start']['_line'] += diff;
+								ranges[type][line_id][o]['_end']['_line'] += diff;
+							}
+						}
+					}
+				}
+
+			}
+		}
+
+
+
+		let decorationRanges = {};
+
+		for (var type in ranges) {
+			decorationRanges[type] = [];
+			for (var line_id in ranges[type]) {
+				if (isset(validIds[line_id]) == false) {
+					delete ranges[type][line_id];
+				} else {
+					for (let i in ranges[type][line_id]) {
+						decorationRanges[type].push(ranges[type][line_id][i]);
 					}
 				}
 			}
 		}
 
-		if (fullSweep == true) {
-			if (keyWordRanges.length > 0) {
-				editor.setDecorations(colorKeyWord, keyWordRanges);
-			}
-			if (punctuationRanges.length > 0) {
-				editor.setDecorations(colorPunctuation, punctuationRanges);
-			}
-			if (supportFunctionRanges.length > 0) {
-				editor.setDecorations(colorSupportFunction, supportFunctionRanges);
-			}
-			if (valueConstantRanges.length > 0) {
-				editor.setDecorations(colorValueConstant, valueConstantRanges);
-			}
-			if (valueNumericRanges.length > 0) {
-				editor.setDecorations(colorValueNumeric, valueNumericRanges);
-			}
-			if (stringRanges.length > 0) {
-				editor.setDecorations(colorString, stringRanges);
-			}
-		}
+		editor.setDecorations(colorKeyWord, decorationRanges['keywords']);
+		editor.setDecorations(colorPunctuation, decorationRanges['punctuation']);
+		editor.setDecorations(colorSupportFunction, decorationRanges['supportFunction']);
+		editor.setDecorations(colorValueConstant, decorationRanges['valueConstant']);
+		editor.setDecorations(colorValueNumeric, decorationRanges['valueNumeric']);
+		editor.setDecorations(colorString, decorationRanges['string']);
+
 	}
 
 }

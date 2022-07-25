@@ -2,7 +2,7 @@
 	"name": "inline-css-color",
 	"displayName": "Inline CSS Color",
 	"description": "Color your inline html style=\"\" values to match your css theme.",
-	"version": "1.1.0",
+	"version": "1.2.0",
 	"publisher": "outofsync42",
 	"license": "MIT",
 	"repository": {
@@ -107,6 +107,10 @@
 		"id": "f57f5ef0-200a-4eb4-af88-1a0b96d6d8fb",
 		"publisherDisplayName": "outofsync42",
 		"publisherId": "5b357866-64ca-4aee-92e0-be55ff869996",
-		"isPreReleaseVersion": false
+		"isPreReleaseVersion": false,
+		"targetPlatform": "undefined",
+		"isApplicationScoped": false,
+		"updated": true,
+		"preRelease": false
 	}
 }
