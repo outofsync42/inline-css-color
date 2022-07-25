@@ -202,8 +202,6 @@ var InlineCssColor = function (application) {
 			}
 		}
 
-
-
 		let decorationRanges = {};
 
 		for (var type in ranges) {
@@ -236,8 +234,8 @@ var InlineCssColor = function (application) {
 function activate(context) {
 
 	var application = new Application(context);
-	//var inlineCssColor = new InlineCssColor(application);
-	application.enableDocumentCache(['html', 'php']);
+
+	application.enableDocumentCache(['html', 'php']); //cache only php and html files
 
 	let controls = {}
 	application.on('documentOpen', function () {
