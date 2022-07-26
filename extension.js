@@ -10,11 +10,6 @@ var InlineCssColor = function (application) {
 
 	var self = this;
 
-	this.isValidDocType = function () {
-		var validDocTypes = ['php', 'html', 'htm']
-		return in_array(application.documentType(), validDocTypes);
-	}
-
 	//create new types so old ones are not overwritten
 	let colorKeyWord = vscode.window.createTextEditorDecorationType({
 		color: new vscode.ThemeColor('inline.css.keyword'),
@@ -235,29 +230,26 @@ function activate(context) {
 
 	var application = new Application(context);
 
-	application.enableDocumentCache(['html', 'php']); //cache only php and html files
+	application.setExtensionName('inline-css-color');
+	application.setValidDocTypes(['html', 'php']);
+	application.setDocumentCacheEnabled(); //cache only php and html files
 
 	let controls = {}
 	application.on('documentOpen', function () {
-		controls[application.document().fileName] = new InlineCssColor(application);
+		controls[application.documentPath()] = new InlineCssColor(application);
 	});
-
 	application.on('documentFocus', function () {
-		if (controls[application.document().fileName].isValidDocType()) {
-			try {
-				controls[application.document().fileName].colorLines();
-			} catch (e) {
-				console.log(e);
-			}
+		try {
+			controls[application.documentPath()].colorLines();
+		} catch (e) {
+			console.log(e);
 		}
 	})
 	application.on('documentTextChange', function (e, startLine, endLine, diff) {
-		if (controls[application.document().fileName].isValidDocType()) {
-			try {
-				controls[application.document().fileName].colorLines(startLine, endLine, diff);
-			} catch (e) {
-				console.log(e);
-			}
+		try {
+			controls[application.documentPath()].colorLines(startLine, endLine, diff);
+		} catch (e) {
+			console.log(e);
 		}
 	})
 	application.activate();
