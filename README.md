@@ -12,8 +12,9 @@ There is no API in the vscode extension to retrieve theme token colors so you wi
 
 Inline CSS style="" value colors match theme.
 
-### Before			### After
-![Example](https://raw.githubusercontent.com/outofsync42/inline-css-color/master/img/example2.png) ![Example](https://raw.githubusercontent.com/outofsync42/inline-css-color/master/img/example1.png)
+| Before      | After |
+| ----------- | ----------- |
+|![Example](https://raw.githubusercontent.com/outofsync42/inline-css-color/master/img/example2.png)|![Example](https://raw.githubusercontent.com/outofsync42/inline-css-color/master/img/example1.png)|
 
 # Configuration
 
