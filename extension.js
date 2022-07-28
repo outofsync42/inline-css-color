@@ -47,10 +47,6 @@ var InlineCssColor = function (application) {
 		diff = isset(diff) ? diff : 0;
 		startLine = is_int(startLine) ? startLine : 0
 		endLine = is_int(endLine) ? endLine : lines.length - 1; //inclusive
-		console.log(lines);
-		console.log(startLine);
-		console.log(endLine);
-		console.log(diff);
 
 		let validIds = {}; //more performant to index rather than use array
 		for (var i in lines) {
