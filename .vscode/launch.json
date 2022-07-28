@@ -13,14 +13,14 @@
 				"--extensionDevelopmentPath=${workspaceFolder}"
 			]
 		},
-		{
-			"name": "Extension Tests",
-			"type": "extensionHost",
-			"request": "launch",
-			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--extensionTestsPath=${workspaceFolder}/test/suite/index"
-			]
-		}
+		// {
+		// 	"name": "Extension Tests",
+		// 	"type": "extensionHost",
+		// 	"request": "launch",
+		// 	"args": [
+		// 		"--extensionDevelopmentPath=${workspaceFolder}",
+		// 		"--extensionTestsPath=${workspaceFolder}/test/suite/index"
+		// 	]
+		// }
 	]
 }
