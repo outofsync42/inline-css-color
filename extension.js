@@ -44,17 +44,19 @@ var InlineCssColor = function (application) {
 		let editor = application.editor();
 
 		let lines = application.getDocumentLinesInfo();
-
 		diff = isset(diff) ? diff : 0;
-
 		startLine = is_int(startLine) ? startLine : 0
 		endLine = is_int(endLine) ? endLine : lines.length - 1; //inclusive
+		console.log(lines);
+		console.log(startLine);
+		console.log(endLine);
+		console.log(diff);
 
 		let validIds = {}; //more performant to index rather than use array
 		for (var i in lines) {
+			let line_id = lines[i]['id'];
+			validIds[line_id] = 0;
 			if (lines[i]['syntax'] == 'html') {
-				let line_id = lines[i]['id'];
-				validIds[line_id] = 0;
 				if ((i >= startLine && i <= endLine)) {
 
 					for (var type in ranges) {
