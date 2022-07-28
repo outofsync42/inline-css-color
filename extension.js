@@ -178,20 +178,17 @@ var InlineCssColor = function (application) {
 							}
 						}
 					}
-
 				}
-
-				if (i > endLine) {
-					if (diff !== 0) {
-						for (var type in ranges) {
-							for (var o in ranges[type][line_id]) {
-								ranges[type][line_id][o]['_start']['_line'] += diff;
-								ranges[type][line_id][o]['_end']['_line'] += diff;
-							}
+			}
+			if (i > endLine) {
+				if (diff !== 0) {
+					for (var type in ranges) {
+						for (var o in ranges[type][line_id]) {
+							ranges[type][line_id][o]['_start']['_line'] += diff;
+							ranges[type][line_id][o]['_end']['_line'] += diff;
 						}
 					}
 				}
-
 			}
 		}
 
