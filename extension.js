@@ -58,7 +58,7 @@ var InlineCssColor = function (application) {
 					let text = lines[line]['text'];
 					let start = style[index]['start'];
 					let end = style[index]['end'];
-					//console.log(lines[line]);
+		
 					if (start === null || end === null) {
 						continue;
 					}
