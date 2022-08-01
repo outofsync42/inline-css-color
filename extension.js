@@ -168,7 +168,9 @@ var InlineCssColor = function (application) {
 		startLine = is_int(startLine) ? startLine : 0
 		endLine = is_int(endLine) ? endLine : lines.length - 1; //inclusive
 
-
+		// console.log(lines.length);
+		// console.log(startLine);
+		// console.log(endLine);
 
 		let validIds = {};
 		let isSingleLine = diff == 0 && startLine == endLine;
