@@ -63,7 +63,7 @@ var InlineCssColor = function (application) {
 						continue;
 					}
 
-					ranges['keywords'][line_id].push(new vscode.Range(line, start, line, end));
+					//ranges['keywords'][line_id].push(new vscode.Range(line, start, line, end)); //break inline php tags
 
 					let x = start;
 					let numericStart = null;
@@ -85,7 +85,7 @@ var InlineCssColor = function (application) {
 							let supportFunction = false;
 							if (text.indexOf(/:| :|  :/, x) == x) {
 								if (constStart !== null) {
-									//ranges['keywords'][line_id].push(new vscode.Range(line, constStart, line, x));
+									ranges['keywords'][line_id].push(new vscode.Range(line, constStart, line, x));
 									inMatch = false;
 									constStart = null;
 								}
