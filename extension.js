@@ -161,6 +161,13 @@ var InlineCssColor = function (application) {
 
 	this.colorLines = function (startLine, endLine, diff) {
 
+		if(is_true(self.running)){
+			console.log('here');
+			setTimeout(function(){
+				self.colorLines(startLine, endLine, diff);
+			})
+		}
+		self.running = true;
 		let editor = application.editor();
 
 		let lines = application.getDocumentLinesInfo();
@@ -230,6 +237,7 @@ var InlineCssColor = function (application) {
 		editor.setDecorations(colorValueNumeric, decorationRanges['valueNumeric']);
 		editor.setDecorations(colorString, decorationRanges['string']);
 
+		self.running = false;
 	}
 
 }
