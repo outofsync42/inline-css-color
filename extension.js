@@ -12,14 +12,8 @@ var InlineCssColor = function (application) {
 	var self = this;
 
 	//create new types so old ones are not overwritten
-	let colorKeyWord = vscode.window.createTextEditorDecorationType({
-		color: new vscode.ThemeColor('inline.css.keyword'),
-	})
 	let colorPunctuation = vscode.window.createTextEditorDecorationType({
 		color: new vscode.ThemeColor('inline.css.punctuation'),
-	})
-	let colorValueConstant = vscode.window.createTextEditorDecorationType({
-		color: new vscode.ThemeColor('inline.css.valueConstant'),
 	})
 	let colorSupportFunction = vscode.window.createTextEditorDecorationType({
 		color: new vscode.ThemeColor('inline.css.supportFunction'),
@@ -29,6 +23,12 @@ var InlineCssColor = function (application) {
 	})
 	let colorString = vscode.window.createTextEditorDecorationType({
 		color: new vscode.ThemeColor('inline.css.string'),
+	})
+	let colorValueConstant = vscode.window.createTextEditorDecorationType({
+		color: new vscode.ThemeColor('inline.css.valueConstant'),
+	})
+	let colorKeyWord = vscode.window.createTextEditorDecorationType({
+		color: new vscode.ThemeColor('inline.css.keyword'),
 	})
 
 	let ranges = {
@@ -63,6 +63,8 @@ var InlineCssColor = function (application) {
 						continue;
 					}
 
+					ranges['keywords'][line_id].push(new vscode.Range(line, start, line, end));
+
 					let x = start;
 					let numericStart = null;
 					let constStart = null;
@@ -83,7 +85,7 @@ var InlineCssColor = function (application) {
 							let supportFunction = false;
 							if (text.indexOf(/:| :|  :/, x) == x) {
 								if (constStart !== null) {
-									ranges['keywords'][line_id].push(new vscode.Range(line, constStart, line, x));
+									//ranges['keywords'][line_id].push(new vscode.Range(line, constStart, line, x));
 									inMatch = false;
 									constStart = null;
 								}
@@ -229,13 +231,13 @@ var InlineCssColor = function (application) {
 				}
 			}
 		}
-
+		
+		editor.setDecorations(colorValueNumeric, decorationRanges['valueNumeric']);
 		editor.setDecorations(colorKeyWord, decorationRanges['keywords']);
 		editor.setDecorations(colorPunctuation, decorationRanges['punctuation']);
 		editor.setDecorations(colorSupportFunction, decorationRanges['supportFunction']);
-		editor.setDecorations(colorValueConstant, decorationRanges['valueConstant']);
-		editor.setDecorations(colorValueNumeric, decorationRanges['valueNumeric']);
 		editor.setDecorations(colorString, decorationRanges['string']);
+		editor.setDecorations(colorValueConstant, decorationRanges['valueConstant']);
 
 		self.running = false;
 	}
@@ -264,9 +266,9 @@ function activate(context) {
 			console.log(e);
 		}
 	})
-	application.on('documentTextChange', function (startLine, endLine, diff) {
+	application.on('documentTextChange', function (event) {
 		try {
-			controls[application.documentPath()].colorLines(startLine, endLine, diff);
+			controls[application.documentPath()].colorLines(event.startLine, event.endLine, event.diff);
 		} catch (e) {
 			console.log(e);
 		}
