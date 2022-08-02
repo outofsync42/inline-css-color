@@ -1,6 +1,9 @@
 const { start } = require('repl');
 const vscode = require('vscode');
-const Application = require('./lib/application');
+const app = require('./lib/application');
+const Application = app.Application;
+const Helpers = app.Helpers;
+const ConfigSettings = app.ConfigSettings;
 
 require('./lib/functions')();
 
@@ -40,6 +43,7 @@ var InlineCssColor = function (application) {
 		string: {},
 	}
 
+
 	this.setLineRanges = function (lines, i) {
 
 		let line_id = lines[i]['id'];
@@ -58,12 +62,10 @@ var InlineCssColor = function (application) {
 					let text = lines[line]['text'];
 					let start = style[index]['start'];
 					let end = style[index]['end'];
-		
+
 					if (start === null || end === null) {
 						continue;
 					}
-
-					//ranges['keywords'][line_id].push(new vscode.Range(line, start, line, end)); //break inline php tags
 
 					let x = start;
 					let numericStart = null;
@@ -163,13 +165,6 @@ var InlineCssColor = function (application) {
 
 	this.colorLines = function (startLine, endLine, diff) {
 
-		if(is_true(self.running)){
-			console.log('here');
-			setTimeout(function(){
-				self.colorLines(startLine, endLine, diff);
-			})
-		}
-		self.running = true;
 		let editor = application.editor();
 
 		let lines = application.getDocumentLinesInfo();
@@ -231,15 +226,205 @@ var InlineCssColor = function (application) {
 				}
 			}
 		}
-		
-		editor.setDecorations(colorValueNumeric, decorationRanges['valueNumeric']);
+
 		editor.setDecorations(colorKeyWord, decorationRanges['keywords']);
 		editor.setDecorations(colorPunctuation, decorationRanges['punctuation']);
+		editor.setDecorations(colorValueNumeric, decorationRanges['valueNumeric']);
+		editor.setDecorations(colorValueConstant, decorationRanges['valueConstant']);
 		editor.setDecorations(colorSupportFunction, decorationRanges['supportFunction']);
 		editor.setDecorations(colorString, decorationRanges['string']);
-		editor.setDecorations(colorValueConstant, decorationRanges['valueConstant']);
 
-		self.running = false;
+	}
+
+	let ranges2 = {
+		keywords: [],
+		punctuation: [],
+		supportFunction: [],
+		valueConstant: [],
+		valueNumeric: [],
+		string: [],
+	}
+
+	this.setLineRanges2 = function (line, start, end, text) {
+		// console.log(text);
+		// console.log(start);
+		// console.log(end);
+		// console.log(text.substring(start,end));
+		let x = start;
+		let numericStart = null;
+		let constStart = null;
+		let stringStart = null;
+		let phpOpen = false;
+		let inMatch = false;
+
+		while (x <= end) {
+
+			if (text.indexOf(/<\?/, x) === x) {
+				phpOpen = true;
+			} else if (text.indexOf(/\?>/, x) === x) {
+				phpOpen = false;
+			}
+
+			if (phpOpen == false) {
+				let valueEnd = false;
+				let supportFunction = false;
+				if (text.indexOf(/:| :|  :/, x) == x) {
+					if (constStart !== null) {
+						ranges2['keywords'].push(new vscode.Range(line, constStart, line, x));
+						inMatch = false;
+						constStart = null;
+					}
+					ranges2['punctuation'].push(new vscode.Range(line, x, line, x + 1));
+				} else if (text.indexOf(/[),=]/, x) == x) {
+					ranges2['punctuation'].push(new vscode.Range(line, x, line, x + 1));
+					valueEnd = true;
+				} else if (text.indexOf(/[\(]/, x) == x) {
+					ranges2['punctuation'].push(new vscode.Range(line, x, line, x + 1));
+					valueEnd = true;
+					supportFunction = true;
+				} else if (text.indexOf(/[;]/, x) == x) {
+					ranges2['punctuation'].push(new vscode.Range(line, x, line, x + 1));
+					valueEnd = true;
+				} else if (text.indexOf(/[ ]/, x) == x) {
+					valueEnd = true;
+				} else if (x == end) {
+					valueEnd = true;
+				} else if (inMatch == false && text.indexOf(/['"]/, x) == x) {
+					if (stringStart === null) {
+						stringStart = x;
+						inMatch = true;
+					}
+				} else if (inMatch == false && text.indexOf(/[0-9#]/, x) == x) {
+					if (numericStart === null) {
+						numericStart = x;
+						inMatch = true;
+					}
+				} else if (inMatch == false && text.indexOf(/[a-zA-Z]/, x) == x) {
+					if (constStart === null) {
+						constStart = x;
+						inMatch = true
+					}
+				} else if (inMatch == false && text.indexOf(/[-]/, x) == x && text.indexOf(/[0-9]/, x + 1) == x + 1) {
+					if (numericStart === null) {
+						numericStart = x;
+						inMatch = true;
+					}
+				} else if (inMatch == false && text.indexOf(/[-]/, x) == x && text.indexOf(/[a-zA-Z]/, x + 1) == x + 1) {
+					if (constStart === null) {
+						constStart = x;
+						inMatch = true;
+					}
+				}
+
+				if (valueEnd) {
+					inMatch = false;
+					if (stringStart) {
+						ranges2['string'].push(new vscode.Range(line, stringStart, line, x));
+						stringStart = null;
+					}
+					if (numericStart !== null) {
+						ranges2['valueNumeric'].push(new vscode.Range(line, numericStart, line, x + (x == end && isset(text[x + 1]) == false ? 1 : 0)));
+						numericStart = null;
+					}
+					if (constStart !== null) {
+						if (supportFunction) {
+							supportFunction = false;
+							ranges2['supportFunction'].push(new vscode.Range(line, constStart, line, x + (x == end && isset(text[x + 1]) == false ? 1 : 0)));
+						} else {
+							ranges2['valueConstant'].push(new vscode.Range(line, constStart, line, x + (x == end && isset(text[x + 1]) == false ? 1 : 0)));
+						}
+						constStart = null;
+					}
+				}
+			}
+			x++;
+		}
+	}
+
+	this.colorLines2 = function (startLine, endLine, diff) {
+
+		ranges2 = {
+			keywords: [],
+			punctuation: [],
+			supportFunction: [],
+			valueConstant: [],
+			valueNumeric: [],
+			string: [],
+		}
+
+		let lines = application.documentLines();
+		
+		diff = isset(diff) ? diff : 0;
+		startLine = is_int(startLine) ? startLine : 0
+		endLine = is_int(endLine) ? endLine : lines.length - 1; //inclusive
+
+		let phpOpen = false;
+		let styleOpen = false;
+
+		for (var line_x in lines) {
+			let x = 0;
+			let text = lines[line_x];
+			let styleStart = 0;
+			let styleEnd = text.length;
+			while (x < text.length) {
+
+				if (text.indexOf(/<\?/, x) === x) {
+					phpOpen = true;
+				} else if (text.indexOf(/\?>/, x) === x) {
+					phpOpen = false;
+				}
+
+				if (phpOpen == true) {
+					x++;
+					continue;
+				}
+
+				if (styleOpen == false) {
+
+					text = str_replace('\'', '"', text);
+					let styleMatch = ['style="', 'style ="', 'style= "', 'style = "'];
+					let styleMatchIndex = -1;
+					for (var i in styleMatch) {
+						let y = text.indexOf(styleMatch[i],x);
+						if (y > -1) {
+							styleMatchIndex = i;
+							x = y;
+							break;
+						}
+					}
+					if (styleMatchIndex == -1) {
+						break;
+					}
+					styleOpen = true;
+					x += styleMatch[styleMatchIndex].length;
+					styleStart = x;
+				}
+
+				if (styleOpen) {
+					if (text[x] == '"') {
+						styleEnd = x;
+						//completed line
+						styleOpen = false;
+						self.setLineRanges2(parseInt(line_x), styleStart, styleEnd, text);
+					}
+				}
+
+				x++;
+			}
+			if (styleOpen) {
+				//open style line
+				self.setLineRanges2(parseInt(line_x), styleStart, styleEnd, text);
+			}
+		}
+
+		let editor = application.editor();
+	
+		editor.setDecorations(colorValueNumeric, ranges2['valueNumeric']);
+		editor.setDecorations(colorKeyWord, ranges2['keywords']);
+		editor.setDecorations(colorPunctuation, ranges2['punctuation']);
+		editor.setDecorations(colorSupportFunction, ranges2['supportFunction']);
+		editor.setDecorations(colorString, ranges2['string']);
+		editor.setDecorations(colorValueConstant, ranges2['valueConstant']);
 	}
 
 }
