@@ -1,30 +1,29 @@
 const vscode = require('vscode');
-const app = require('./lib/application');
-const Application = app.Application;
-const Helpers = app.Helpers;
-const ConfigSettings = app.ConfigSettings;
-
-require('./lib/functions')();
+const custom = require('./lib/custom.js');
+const app = new custom.Application();
 
 /**
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
 
-	var application = new Application(context);
+	//INIT
+	app.setContext(context);
+	app.setValidDocTypes(['html', 'php']);
+	app.setDocumentCacheEnabled();
 
-	application.setValidDocTypes(['html', 'php']);
+	//CREATE DECORATIONS
+	app.editorCreateDecoration('keywords', { color: new vscode.ThemeColor('inline.css.keyword') });
+	app.editorCreateDecoration('punctuation', { color: new vscode.ThemeColor('inline.css.punctuation') });
+	app.editorCreateDecoration('valueNumeric', { color: new vscode.ThemeColor('inline.css.valueNumeric') });
+	app.editorCreateDecoration('valueConstant', { color: new vscode.ThemeColor('inline.css.valueConstant') });
+	app.editorCreateDecoration('supportFunction', { color: new vscode.ThemeColor('inline.css.supportFunction') });
+	app.editorCreateDecoration('string', { color: new vscode.ThemeColor('inline.css.string') });
 
-	application.editorCreateDecoration('keywords', { color: new vscode.ThemeColor('inline.css.keyword') });
-	application.editorCreateDecoration('punctuation', { color: new vscode.ThemeColor('inline.css.punctuation') });
-	application.editorCreateDecoration('valueNumeric', { color: new vscode.ThemeColor('inline.css.valueNumeric') });
-	application.editorCreateDecoration('valueConstant', { color: new vscode.ThemeColor('inline.css.valueConstant') });
-	application.editorCreateDecoration('supportFunction', { color: new vscode.ThemeColor('inline.css.supportFunction') });
-	application.editorCreateDecoration('string', { color: new vscode.ThemeColor('inline.css.string') });
+	//ADD RANGES
+	app.addDecorationLineRanges(function (lines, line_x, ranges) {
 
-	application.addDecorationLineRanges(function (lines, line_x, ranges) {
-
-		if (lines[line_x]['syntax'] !== 'html') {
+		if (lines[line_x]['syntax'] !== 'html' || isset(lines[line_x]['html']['elements']) == false) {
 			return;
 		}
 
@@ -85,12 +84,12 @@ function activate(context) {
 								keyWordStart = true;
 							} else if (text.indexOf(/[ ]/, x) == x) {
 								valueEnd = true;
-								if(keyWordStart){
+								if (keyWordStart) {
 									keyword = true;
 								}
 							} else if (x == end) {
 								valueEnd = true;
-								if(keyWordStart){
+								if (keyWordStart) {
 									keyword = true;
 								}
 							} else if (inMatch == false && text.indexOf(/['"]/, x) == x) {
@@ -152,7 +151,8 @@ function activate(context) {
 		}
 	});
 
-	application.activate();
+	//START
+	app.activate();
 }
 
 // this method is called when your extension is deactivated
