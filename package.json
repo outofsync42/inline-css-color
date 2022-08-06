@@ -2,7 +2,7 @@
 	"name": "inline-css-color",
 	"displayName": "Inline CSS Color",
 	"description": "Color your inline html style values to match your css theme.",
-	"version": "1.4.7",
+	"version": "1.4.9",
 	"publisher": "outofsync42",
 	"license": "MIT",
 	"repository": {

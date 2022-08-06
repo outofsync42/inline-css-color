@@ -22,7 +22,7 @@ function activate(context) {
 
 	//ADD RANGES
 	app.addDecorationLineRanges(function (lines, line_x, ranges) {
-
+		
 		if (lines[line_x]['syntax'] !== 'html' || isset(lines[line_x]['html']['elements']) == false) {
 			return;
 		}
@@ -33,7 +33,7 @@ function activate(context) {
 			let style = elements[element_id]['attributes']['style'];
 			if (style) {
 				for (var index in style) {
-
+					
 					let line = style[index]['line'];
 					let text = lines[line]['text'];
 
@@ -149,6 +149,7 @@ function activate(context) {
 
 			}
 		}
+		
 	});
 
 	//START
