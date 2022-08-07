@@ -37,12 +37,14 @@ Then click on the text you want to see its token information. Locate the "foregr
 After getting your colors open your settings.json file and add them to the "workbench.colorCustomizations" object.
 
 ```
-"workbench.colorCustomizations" : {
-	"inline.css.keyword": "#0000ff",
-	"inline.css.punctuation": "#fff",
-	"inline.css.supportFunction": "#000",
-	"inline.css.valueConstant": "#000",
-	"inline.css.valueNumeric": "#EE8484",
-	"inline.css.string": "#63ECF1",
-}
+"workbench.colorCustomizations": {
+		"inline.css.propertyName": "#0000ff",
+		"inline.css.punctuation": "#fff",
+		"inline.css.supportFunction": "#000",
+		"inline.css.valueConstant": "#000",
+		"inline.css.valueNumeric": "#EE8484",
+		"inline.css.valueNumericUnit": "#EE8484",
+		"inline.css.keywordImportant": "#000",
+		"inline.css.string": "#63ECF1",
+	},
 ```
