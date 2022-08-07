@@ -48,3 +48,7 @@ After getting your colors open your settings.json file and add them to the "work
 		"inline.css.string": "#63ECF1",
 	},
 ```
+
+# Important Changes
+
+<mark>"inline.css.keywords" has been replace by "inline.css.propertyName"</mark>
