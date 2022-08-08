@@ -57,7 +57,7 @@
 			},
 			{
 				"id": "inline.css.valueConstant",
-				"description": "Color for inline css constant value. ex white",
+				"description": "Color for inline css constant value. ex :none;",
 				"defaults": {
 					"dark": "#D4D4D4",
 					"light": "#0451A5",
@@ -68,7 +68,7 @@
 			
 			{
 				"id": "inline.css.valueNumeric",
-				"description": "Color for inline css numeric value. ex. 10px",
+				"description": "Color for inline css numeric value. ex. 10 or #FF0000",
 				"defaults": {
 					"dark": "#B5CEA8",
 					"light": "#000000",
@@ -78,7 +78,7 @@
 			},
 			{
 				"id": "inline.css.valueNumericUnit",
-				"description": "Color for inline css numeric value. ex. 10px",
+				"description": "Color for inline css numeric value. ex. px or %",
 				"defaults": {
 					"dark": "#B5CEA8",
 					"light": "#09885A",
