@@ -36,7 +36,7 @@ Then click on the text you want to see its token information. Locate the "foregr
 
 After getting your colors open your settings.json file and add them to the "workbench.colorCustomizations" object.
 
-```
+```json
 "workbench.colorCustomizations": {
 		"inline.css.propertyName": "#0000ff",
 		"inline.css.punctuation": "#fff",
@@ -47,6 +47,22 @@ After getting your colors open your settings.json file and add them to the "work
 		"inline.css.keywordImportant": "#000",
 		"inline.css.string": "#63ECF1",
 	},
+```
+If you want something that looks similar to VS Codes default CSS syntax coloring, use the following:
+
+```json
+
+    "workbench.colorCustomizations":
+    {
+        "inline.css.propertyName": "#9cdcfe",
+        "inline.css.punctuation": "#d4d4d4",
+        "inline.css.supportFunction": "#ce9178",
+        "inline.css.valueConstant": "#ce9178",
+        "inline.css.valueNumeric": "#EE8484",
+        "inline.css.valueNumericUnit": "#EE8484",
+        "inline.css.keywordImportant": "#ce9178",
+        "inline.css.string": "#63ECF1",
+    },
 ```
 
 # Important Changes
