@@ -14,6 +14,7 @@ Inline CSS Color allows you set colors for your inline HTML style="" attributes.
 | ----------- | ----------- |
 |![Example](https://raw.githubusercontent.com/outofsync42/inline-css-color/master/img/example2.png)|![Example](https://raw.githubusercontent.com/outofsync42/inline-css-color/master/img/example1.png)|
 
+There is no API in the vscode extension to retrieve theme token colors so you will have to do this manually.
 To achieve this, just set your inline.css color properties to match your theme in the "workbench.colorCustomizations" object in your settings.json file.
 
 ![Settings](https://raw.githubusercontent.com/outofsync42/inline-css-color/master/img/settings.png)
@@ -21,9 +22,6 @@ To achieve this, just set your inline.css color properties to match your theme i
 If you are not familiar with how to get your theme token colors please follow the configuration section below.
 
 # Configuration
-
-There is no API in the vscode extension to retrieve theme token colors so you will have to do this manually.
-
 
 First you will want you will want get the current the colors for your existing theme. To do this is press "CTRL+Shift+P" and type in "Inspect".
 Select "Developer: Inspect Editor Tokens and Scopes"
@@ -37,7 +35,8 @@ Then click on the text you want to see its token information. Locate the "foregr
 After getting your colors open your settings.json file and add them to the "workbench.colorCustomizations" object.
 
 ```json
-"workbench.colorCustomizations": {
+
+	"workbench.colorCustomizations": {
 		"inline.css.propertyName": "#0000ff",
 		"inline.css.punctuation": "#fff",
 		"inline.css.supportFunction": "#000",
@@ -52,8 +51,7 @@ If you want something that looks similar to VS Codes default CSS syntax coloring
 
 ```json
 
-    "workbench.colorCustomizations":
-    {
+    "workbench.colorCustomizations": {
         "inline.css.propertyName": "#9cdcfe",
         "inline.css.punctuation": "#d4d4d4",
         "inline.css.supportFunction": "#ce9178",
@@ -64,7 +62,19 @@ If you want something that looks similar to VS Codes default CSS syntax coloring
         "inline.css.string": "#63ECF1",
     },
 ```
+## Extension Settings
 
-# Important Changes
+This extension contributes the following commands:
 
-<mark>"inline.css.keywords" has been replace by "inline.css.propertyName"</mark>
+- `inline-css-color.enablePhpStyle`: Enable colorization of style properties found in strings in PHP code.
+- `inline-css-color.enableHtmlCommentStyle`: Enable colorization of style properties found in HTML Commented code.
+
+![Settings](https://raw.githubusercontent.com/outofsync42/inline-css-color/master/img/settings2.png)
+
+## License
+
+This extension is licensed under the MIT License.
+
+## Contributing and Support
+
+The extension is developed and maintained by `outofsync42`. If you encounter any issues or have suggestions for improvements, please open an issue on the project's GitHub repository.

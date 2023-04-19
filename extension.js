@@ -1,192 +1,441 @@
 const vscode = require('vscode');
+
+//include Application/Document which optimizes event handling and exposes wrapper functions for ease of use in vscode
 const custom = require('./lib/custom.js');
-const app = new custom.Application();
+
+//custom objects
+const App = new custom.Application();
+const Document = custom.Document;
+
+//extension object
+var InLineColor = function () {
+
+	//build decoration colors and range arrays to be associated
+	let _decorations = {}
+	_decorations['propertyName'] = { decoration: vscode.window.createTextEditorDecorationType({ color: new vscode.ThemeColor('inline.css.propertyName') }), ranges: [] }
+	_decorations['punctuation'] = { decoration: vscode.window.createTextEditorDecorationType({ color: new vscode.ThemeColor('inline.css.punctuation') }), ranges: [] }
+	_decorations['valueNumeric'] = { decoration: vscode.window.createTextEditorDecorationType({ color: new vscode.ThemeColor('inline.css.valueNumeric') }), ranges: {} }
+	_decorations['valueNumericUnit'] = { decoration: vscode.window.createTextEditorDecorationType({ color: new vscode.ThemeColor('inline.css.valueNumericUnit') }), ranges: [] }
+	_decorations['valueConstant'] = { decoration: vscode.window.createTextEditorDecorationType({ color: new vscode.ThemeColor('inline.css.valueConstant') }), ranges: [] }
+	_decorations['supportFunction'] = { decoration: vscode.window.createTextEditorDecorationType({ color: new vscode.ThemeColor('inline.css.supportFunction') }), ranges: [] }
+	_decorations['keywordImportant'] = { decoration: vscode.window.createTextEditorDecorationType({ color: new vscode.ThemeColor('inline.css.keywordImportant') }), ranges: [] }
+	_decorations['string'] = { decoration: vscode.window.createTextEditorDecorationType({ color: new vscode.ThemeColor('inline.css.string') }), ranges: [] }
+
+	//build config object for getting settings
+	let config = new custom.ConfigSettings('inline-css-color');
+
+	/**
+	 * @param {vscode.TextDocument} document 
+	 */
+	this.applyDecorations = function (document) {
+
+		//get document lines array
+		let lines = Document.lines(document);
+
+		//find all ranges for style attributes
+		let results = findStyleRanges(lines);
+
+		//if no ranges found return
+		if (results.length == 0) {
+			return;
+		}
+
+		//clear all previously sent ranges
+		for (let type in _decorations) {
+			_decorations[type]['ranges'] = [];
+		}
+
+		//find all properties in style ranges and add decoration
+		results.forEach(function (row) {
+
+			let line = row['line'];
+			let text = lines[row['line']];
+			let x = row['styleStart'];
+			let end = row['styleEnd'];
+			let propertyNameStart = true;
+			let numericStart = null;
+			let numericUnitStart = null;
+			let constStart = null;
+			let stringStart = null;
+			let keyWordStart = null;
+			let keyWordImportantStart = null;
+			let inMatch = false;
+			while (x <= end) {
+
+				let valueEnd = false;
+				let supportFunction = false;
+				let propertyName = false;
+				if (text.indexOf(/:| :|  :/, x) == x) {
+					if (constStart !== null) {
+						_decorations['propertyName']['ranges'].push(new vscode.Range(line, constStart, line, x));
+						inMatch = false;
+						constStart = null;
+						propertyNameStart = false;
+					}
+					_decorations['punctuation']['ranges'].push(new vscode.Range(line, x, line, x + 1));
+				} else if (text.indexOf(/[),=]/, x) == x) {
+					_decorations['punctuation']['ranges'].push(new vscode.Range(line, x, line, x + 1));
+					valueEnd = true;
+				} else if (text.indexOf(/[\(]/, x) == x) {
+					_decorations['punctuation']['ranges'].push(new vscode.Range(line, x, line, x + 1));
+					valueEnd = true;
+					supportFunction = true;
+				} else if (text.indexOf(/[;]/, x) == x) {
+					_decorations['punctuation']['ranges'].push(new vscode.Range(line, x, line, x + 1));
+					valueEnd = true;
+					propertyNameStart = true;
+				} else if (text.indexOf(/[ ]/, x) == x) {
+					valueEnd = true;
+					if (propertyNameStart) {
+						propertyName = true;
+					}
+				} else if (x == end) {
+					valueEnd = true;
+					if (propertyNameStart) {
+						propertyName = true;
+					}
+				} else if (inMatch == false && text.indexOf(/['"]/, x) == x) {
+					if (stringStart === null) {
+						stringStart = x;
+						inMatch = true;
+					}
+				} else if (inMatch == false && text.indexOf(/[0-9#]/, x) == x) {
+					if (numericStart === null) {
+						numericStart = x;
+						inMatch = true;
+					}
+				} else if (inMatch == false && text.indexOf(/[a-zA-Z]/, x) == x) {
+					if (constStart === null) {
+						constStart = x;
+						inMatch = true
+					}
+				} else if (inMatch == false && text.indexOf(/!/, x) == x) {
+					if (keyWordStart === null) {
+						keyWordStart = x;
+						inMatch = true
+					}
+				} else if (inMatch == false && text.indexOf(/[-]/, x) == x && text.indexOf(/[0-9]/, x + 1) == x + 1) {
+					if (numericStart === null) {
+						numericStart = x;
+						inMatch = true;
+					}
+				} else if (inMatch == false && text.indexOf(/[-]/, x) == x && text.indexOf(/[a-zA-Z]/, x + 1) == x + 1) {
+					if (constStart === null) {
+						constStart = x;
+						inMatch = true;
+					}
+				}
+
+				if (numericStart !== null && text.indexOf(/[^0-9\(),=; ]/, x) == x) {
+					_decorations['valueNumeric']['ranges'].push(new vscode.Range(line, numericStart, line, x));
+					numericStart = null;
+					numericUnitStart = x;
+				}
+
+				if (valueEnd) {
+					inMatch = false;
+					if (keyWordStart) {
+						if (text.substring(keyWordStart, x) == "!important") {
+							_decorations['keywordImportant']['ranges'].push(new vscode.Range(line, keyWordStart, line, x + (x == end && isset(text[x + 1]) == false ? 1 : 0)));
+						} else {
+							_decorations['valueConstant']['ranges'].push(new vscode.Range(line, keyWordStart, line, x + (x == end && isset(text[x + 1]) == false ? 1 : 0)));
+						}
+						keyWordStart = null;
+					}
+					if (stringStart) {
+						_decorations['string']['ranges'].push(new vscode.Range(line, stringStart, line, x));
+						stringStart = null;
+					}
+					if (numericStart !== null) {
+						_decorations['valueNumeric']['ranges'].push(new vscode.Range(line, numericStart, line, x + (x == end && isset(text[x + 1]) == false ? 1 : 0)));
+						numericStart = null;
+					}
+					if (numericUnitStart !== null) {
+						_decorations['valueNumericUnit']['ranges'].push(new vscode.Range(line, numericUnitStart, line, x + (x == end && isset(text[x + 1]) == false ? 1 : 0)));
+						numericUnitStart = null;
+					}
+					if (keyWordImportantStart !== null) {
+						_decorations['keywordImportant']['ranges'].push(new vscode.Range(line, keyWordImportantStart, line, x + (x == end && isset(text[x + 1]) == false ? 1 : 0)));
+						keyWordImportantStart = null;
+					}
+					if (constStart !== null) {
+						if (supportFunction) {
+							supportFunction = false;
+							_decorations['supportFunction']['ranges'].push(new vscode.Range(line, constStart, line, x + (x == end && isset(text[x + 1]) == false ? 1 : 0)));
+						} else if (propertyName) {
+							_decorations['propertyName']['ranges'].push(new vscode.Range(line, constStart, line, x + (x == end && isset(text[x + 1]) == false ? 1 : 0)));
+						} else {
+							_decorations['valueConstant']['ranges'].push(new vscode.Range(line, constStart, line, x + (x == end && isset(text[x + 1]) == false ? 1 : 0)));
+						}
+						constStart = null;
+					}
+				}
+
+				x++;
+			}
+		})
+
+		//for each decoration type apply ranges found
+		for (let type in _decorations) {
+			vscode.window.activeTextEditor.setDecorations(_decorations[type]['decoration'], _decorations[type]['ranges']);
+		}
+	}
+
+	function findStyleRanges(lines) {
+
+		let result = [];
+		let insidePHP = false;
+		let insideComment = false;
+		let inStyleQuote = false;
+
+		//get style control settings
+		const phpEnabled = config.getValue('enablePhpStyle', false);
+		const htmlCommentEnabled = config.getValue('enableHtmlCommentStyle', false);
+
+		lines.forEach(function (lineText, lineIndex) {
+
+			function addStyleRangeToResult(line, htmlStart, htmlEnd) {
+
+				//get the position of style attribute. can be 0 if still inside style (eigth broken up by php on same line or if on multiple lines)
+				//inStyleQuote if set means we are still in the style tag from previous find
+				let styleStart = inStyleQuote !== false ? htmlStart : findStyleAttribute(line, htmlStart, htmlEnd);
+
+				//while inside style tag
+				while (styleStart > -1) {
+
+					//get the quote type
+					let styleQuote = inStyleQuote !== false ? inStyleQuote : line[styleStart - 1];
+
+					//look for end of style
+					let styleEnd = line.indexOf(styleQuote, styleStart);
+					if (styleEnd > htmlEnd) {
+						styleEnd = -1;
+					}
+
+					if (styleEnd > -1) {
+						//end of style found
+						inStyleQuote = false;
+					} else {
+						//style is broken up
+						inStyleQuote = styleQuote;
+					}
+
+					//store current range for style
+					result.push({
+						line: lineIndex,
+						styleStart: styleStart,
+						styleEnd: styleEnd > -1 ? styleEnd : htmlEnd,
+						//start: htmlStart,
+						//end: htmlEnd,
+						//style: line.slice(styleStart, styleEnd > -1 ? styleEnd : htmlEnd),
+						//_styleEnd: styleEnd,
+						//_inStyleQuote: inStyleQuote,
+						//html: line.slice(htmlStart, htmlEnd)
+					});
+
+					//check if any more style tags exist on same line
+					styleStart = findStyleAttribute(line, (styleEnd > -1 ? styleEnd : htmlEnd), htmlEnd);
+
+				}
+			}
+
+			let offset = 0;
+
+			while (offset < lineText.length - 1) {
+
+				//look for php open tag
+				let openPHPPos = insidePHP ? 0 : findPHPOpen(lineText, offset);
+
+				//disable finding php open tags
+				if (phpEnabled == true) {
+					openPHPPos = -1;
+				}
+
+				if (openPHPPos > -1) {
+					insidePHP = true;
+				}
+
+				//look for comment open tag
+				let openCommentPos = insideComment ? 0 : findCommentOpen(lineText, offset);
+
+				//disable finding comment open tags
+				if (htmlCommentEnabled == true) {
+					openCommentPos = -1;
+				}
+				if (openCommentPos > -1) {
+					insideComment = true;
+				}
+
+				//if found php or comment open tag
+				if (insidePHP || insideComment) {
+
+					//check which came first
+					if (insidePHP && insideComment) {
+						if (openCommentPos < openPHPPos) {
+							insidePHP = false;
+						} else {
+							insideComment = false;
+						}
+					}
+
+					//if found php open tag first or still inside php
+					if (insidePHP) {
+
+						//capture any html that comes before php open
+						if (offset != openPHPPos) {
+							//found HTML code
+							addStyleRangeToResult(lineText, offset, openPHPPos)
+						}
+
+						//look for php close tag
+						let closePHPPos = findPHPClose(lineText, openPHPPos);
+						if (closePHPPos != -1) {
+							//end of PHP
+							insidePHP = false;
+							offset = closePHPPos;
+						} else {
+							//end of line.. still insidePHP
+							offset = lineText.length - 1
+						}
+					}
+
+					//if found comment open tag first or still inside comment
+					if (insideComment) {
+
+						//capture any html that comes before comment open
+						if (offset != openCommentPos) {
+							//found HTML code
+							addStyleRangeToResult(lineText, offset, openCommentPos)
+						}
+
+						//look for comment close tag
+						let closeCommentPos = findCommentClose(lineText, openCommentPos);
+						if (closeCommentPos != -1) {
+							//end of Comment
+							insideComment = false;
+							offset = closeCommentPos;
+						} else {
+							//end of line.. still insideComment
+							offset = lineText.length - 1
+						}
+					}
+
+					continue;
+				} else {
+					//every thing else is valid html
+					addStyleRangeToResult(lineText, offset, lineText.length)
+					offset = lineText.length
+				}
+
+			}
+
+		});
+
+		return result;
+	}
+
+	function findStyleAttribute(text, startIndex = 0, endIndex = text.length) {
+		//find any valid variation of style tag in line
+		const match = text.slice(startIndex, endIndex).match(/['"\s]style\s*=\s*['"]/);
+		if (match) {
+			//return the position of the first character in the style tag
+			return startIndex + match.index + match[0].length;
+		}
+
+		//return not found
+		return -1;
+	}
+
+	function findCommentOpen(text, startIndex = 0) {
+		//return the first position of the open tag if found
+		return text.indexOf("<!--", startIndex);
+	}
+
+	function findCommentClose(text, startIndex = 0) {
+		//find close comment tag
+		let match = text.indexOf("-->", startIndex);
+		if (match != -1) {
+			//return the last position of the close tag
+			match += 3;
+		}
+		return match;
+	}
+
+	function findPHPOpen(text, startIndex = 0) {
+		//return the first position of the open tag if found
+		return text.indexOf("<?", startIndex);
+	}
+
+	function findPHPClose(text, startIndex = 0) {
+		let match = text.indexOf("?>", startIndex);
+		if (match != -1) {
+			//return the last position of the close tag
+			match += 2;
+		}
+		return match;
+	}
+
+}
 
 /**
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
 
-	//INIT
-	app.setContext(context);
-	app.setValidDocTypes(['html', 'php']);
-	app.setDocumentCacheEnabled();
+	//init extension
+	let inLineColor = new InLineColor();
 
-	//CREATE DECORATIONS
-	app.editorCreateDecoration('propertyName', { color: new vscode.ThemeColor('inline.css.propertyName') });
-	app.editorCreateDecoration('punctuation', { color: new vscode.ThemeColor('inline.css.punctuation') });
-	app.editorCreateDecoration('valueNumeric', { color: new vscode.ThemeColor('inline.css.valueNumeric') });
-	app.editorCreateDecoration('valueNumericUnit', { color: new vscode.ThemeColor('inline.css.valueNumericUnit') });
-	app.editorCreateDecoration('valueConstant', { color: new vscode.ThemeColor('inline.css.valueConstant') });
-	app.editorCreateDecoration('supportFunction', { color: new vscode.ThemeColor('inline.css.supportFunction') });
-	app.editorCreateDecoration('keywordImportant', { color: new vscode.ThemeColor('inline.css.keywordImportant') });
-	app.editorCreateDecoration('string', { color: new vscode.ThemeColor('inline.css.string') });
+	//init application
+	App.setContext(context);
 
-	//ADD RANGES
-	app.addDecorationLineRanges(function (lines, line_x, ranges) {
+	//set file types that should trigger events
+	App.setValidDocTypes(['html', 'php']);
 
-		if (lines[line_x]['syntax'] !== 'html' || isset(lines[line_x]['html']['elements']) == false) {
-			return;
-		}
+	//check when tab is focused and reapply decorations.
+	App.onDocumentFocus(function (document) {
+		inLineColor.applyDecorations(document);
+	})
 
-		let elements = lines[line_x]['html']['elements'];
+	//when ever text is changed reapply decorations.
+	App.onDocumentTextChange(function (event) {
+		inLineColor.applyDecorations(event.document)
+	})
 
-		for (var element_id in elements) {
-			let style = elements[element_id]['attributes']['style'];
-			if (style) {
-				for (var index in style) {
-
-					let line = style[index]['line'];
-					let text = lines[line]['text'];
-
-					let start = style[index]['start'];
-					let end = style[index]['end'];
-
-					if (start === null || end === null) {
-						continue;
-					}
-
-					let x = start;
-					let propertyNameStart = true;
-					let numericStart = null;
-					let numericUnitStart = null;
-					let constStart = null;
-					let stringStart = null;
-					let keyWordStart = null;
-					let keyWordImportantStart = null;
-					let phpOpen = false;
-					let inMatch = false;
-					while (x <= end) {
-
-						if (text.indexOf(/<\?/, x) === x) {
-							phpOpen = true;
-						} else if (text.indexOf(/\?>/, x) === x) {
-							phpOpen = false;
-						}
-
-						if (phpOpen == false) {
-							let valueEnd = false;
-							let supportFunction = false;
-							let propertyName = false;
-							if (text.indexOf(/:| :|  :/, x) == x) {
-								if (constStart !== null) {
-									ranges['propertyName'].push(new vscode.Range(line, constStart, line, x));
-									inMatch = false;
-									constStart = null;
-									propertyNameStart = false;
-								}
-								ranges['punctuation'].push(new vscode.Range(line, x, line, x + 1));
-							} else if (text.indexOf(/[),=]/, x) == x) {
-								ranges['punctuation'].push(new vscode.Range(line, x, line, x + 1));
-								valueEnd = true;
-							} else if (text.indexOf(/[\(]/, x) == x) {
-								ranges['punctuation'].push(new vscode.Range(line, x, line, x + 1));
-								valueEnd = true;
-								supportFunction = true;
-							} else if (text.indexOf(/[;]/, x) == x) {
-								ranges['punctuation'].push(new vscode.Range(line, x, line, x + 1));
-								valueEnd = true;
-								propertyNameStart = true;
-							} else if (text.indexOf(/[ ]/, x) == x) {
-								valueEnd = true;
-								if (propertyNameStart) {
-									propertyName = true;
-								}
-							} else if (x == end) {
-								valueEnd = true;
-								if (propertyNameStart) {
-									propertyName = true;
-								}
-							} else if (inMatch == false && text.indexOf(/['"]/, x) == x) {
-								if (stringStart === null) {
-									stringStart = x;
-									inMatch = true;
-								}
-							} else if (inMatch == false && text.indexOf(/[0-9#]/, x) == x) {
-								if (numericStart === null) {
-									numericStart = x;
-									inMatch = true;
-								}
-							} else if (inMatch == false && text.indexOf(/[a-zA-Z]/, x) == x) {
-								if (constStart === null) {
-									constStart = x;
-									inMatch = true
-								}
-							} else if (inMatch == false && text.indexOf(/!/, x) == x) {
-								if (keyWordStart === null) {
-									keyWordStart = x;
-									inMatch = true
-								}
-							} else if (inMatch == false && text.indexOf(/[-]/, x) == x && text.indexOf(/[0-9]/, x + 1) == x + 1) {
-								if (numericStart === null) {
-									numericStart = x;
-									inMatch = true;
-								}
-							} else if (inMatch == false && text.indexOf(/[-]/, x) == x && text.indexOf(/[a-zA-Z]/, x + 1) == x + 1) {
-								if (constStart === null) {
-									constStart = x;
-									inMatch = true;
-								}
-							}
-
-							if (numericStart !== null && text.indexOf(/[^0-9\(),=; ]/, x) == x) {
-								ranges['valueNumeric'].push(new vscode.Range(line, numericStart, line, x));
-								numericStart = null;
-								numericUnitStart = x;
-							}
-
-							if (valueEnd) {
-								inMatch = false;
-								if(keyWordStart){
-									if(text.substring(keyWordStart,x)=="!important"){
-										ranges['keywordImportant'].push(new vscode.Range(line, keyWordStart, line, x + (x == end && isset(text[x + 1]) == false ? 1 : 0)));
-									} else {
-										ranges['valueConstant'].push(new vscode.Range(line, keyWordStart, line, x + (x == end && isset(text[x + 1]) == false ? 1 : 0)));
-									}
-									keyWordStart = null;
-								}
-								if (stringStart) {
-									ranges['string'].push(new vscode.Range(line, stringStart, line, x));
-									stringStart = null;
-								}
-								if (numericStart !== null) {
-									ranges['valueNumeric'].push(new vscode.Range(line, numericStart, line, x + (x == end && isset(text[x + 1]) == false ? 1 : 0)));
-									numericStart = null;
-								}
-								if(numericUnitStart!==null){
-									ranges['valueNumericUnit'].push(new vscode.Range(line, numericUnitStart, line, x + (x == end && isset(text[x + 1]) == false ? 1 : 0)));
-									numericUnitStart = null;
-								}
-								if(keyWordImportantStart!==null){
-									ranges['keywordImportant'].push(new vscode.Range(line, keyWordImportantStart, line, x + (x == end && isset(text[x + 1]) == false ? 1 : 0)));
-									keyWordImportantStart = null;
-								}
-								if (constStart !== null) {
-									if (supportFunction) {
-										supportFunction = false;
-										ranges['supportFunction'].push(new vscode.Range(line, constStart, line, x + (x == end && isset(text[x + 1]) == false ? 1 : 0)));
-									} else if (propertyName) {
-										ranges['propertyName'].push(new vscode.Range(line, constStart, line, x + (x == end && isset(text[x + 1]) == false ? 1 : 0)));
-									} else {
-										ranges['valueConstant'].push(new vscode.Range(line, constStart, line, x + (x == end && isset(text[x + 1]) == false ? 1 : 0)));
-									}
-									constStart = null;
-								}
-							}
-						}
-						x++;
-					}
-
-				}
-
-			}
-		}
-
-	});
-
-	//START
-	app.activate();
+	//activate application.
+	App.activate();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // this method is called when your extension is deactivated
 function deactivate() { }

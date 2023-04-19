@@ -4,6 +4,7 @@ test/**
 .gitignore
 .yarnrc
 vsc-extension-quickstart.md
+test.php
 **/jsconfig.json
 **/*.map
 **/.eslintrc.json

@@ -2,7 +2,7 @@
 	"name": "inline-css-color",
 	"displayName": "Inline CSS Color",
 	"description": "Color your inline html style values to match your css theme.",
-	"version": "1.6.2",
+	"version": "2.0.1",
 	"publisher": "outofsync42",
 	"license": "MIT",
 	"repository": {
@@ -24,6 +24,28 @@
 	],
 	"main": "./extension.js",
 	"contributes": {
+		"configuration": [
+			{
+				"title": "PHP",
+				"properties": {
+					"inline-css-color.enablePhpStyle": {
+						"type": "boolean",
+						"default": false,
+						"description": "Enable colorization of style properties found in strings in PHP code."
+					}
+				}
+			},
+			{
+				"title": "HTML",
+				"properties": {
+					"inline-css-color.enableHtmlCommentStyle": {
+						"type": "boolean",
+						"default": false,
+						"description": "Enable colorization of style properties found in HTML Commented code."
+					}
+				}
+			}
+		],
 		"colors": [
 			{
 				"id": "inline.css.propertyName",
@@ -65,7 +87,6 @@
 					"highContrastLight": "#0451A5"
 				}
 			},
-			
 			{
 				"id": "inline.css.valueNumeric",
 				"description": "Color for inline css numeric value. ex. 10 or #FF0000",
