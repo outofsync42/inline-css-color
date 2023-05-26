@@ -52,9 +52,9 @@
 				"description": "Color for inline css property name.",
 				"defaults": {
 					"dark": "#9CDCFE",
-					"light": "#FF0000",
+					"light": "#d11515",
 					"highContrast": "#9CDCFE",
-					"highContrastLight": "#FF0000"
+					"highContrastLight": "#d11515"
 				}
 			},
 			{

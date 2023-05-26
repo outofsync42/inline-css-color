@@ -69,7 +69,7 @@ This extension contributes the following commands:
 - `inline-css-color.enablePhpStyle`: Enable colorization of style properties found in strings in PHP code.
 - `inline-css-color.enableHtmlCommentStyle`: Enable colorization of style properties found in HTML Commented code.
 
-![Settings](https://raw.githubusercontent.com/outofsync42/inline-css-color/master/img/settings2.png)
+![Settings2](https://github.com/outofsync42/inline-css-color/blob/master/img/settigns2.png?raw=true)
 
 ## License
 

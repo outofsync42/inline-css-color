@@ -4,11 +4,10 @@ const vscode = require('vscode');
 const custom = require('./lib/custom.js');
 
 //custom objects
-const App = new custom.Application();
-const Document = custom.Document;
+const app = new custom.application();
 
 //extension object
-var InLineColor = function () {
+var Extension = function () {
 
 	//build decoration colors and range arrays to be associated
 	let _decorations = {}
@@ -22,7 +21,7 @@ var InLineColor = function () {
 	_decorations['string'] = { decoration: vscode.window.createTextEditorDecorationType({ color: new vscode.ThemeColor('inline.css.string') }), ranges: [] }
 
 	//build config object for getting settings
-	let config = new custom.ConfigSettings('inline-css-color');
+	let config = new app.configuration('inline-css-color');
 
 	/**
 	 * @param {vscode.TextDocument} document 
@@ -30,7 +29,7 @@ var InLineColor = function () {
 	this.applyDecorations = function (document) {
 
 		//get document lines array
-		let lines = Document.lines(document);
+		let lines = app.document.lines(document);
 
 		//find all ranges for style attributes
 		let results = findStyleRanges(lines);
@@ -189,55 +188,55 @@ var InLineColor = function () {
 		let inStyleQuote = false;
 
 		//get style control settings
-		const phpEnabled = config.getValue('enablePhpStyle', false);
-		const htmlCommentEnabled = config.getValue('enableHtmlCommentStyle', false);
+		const phpEnabled = config.get('enablePhpStyle', false);
+		const htmlCommentEnabled = config.get('enableHtmlCommentStyle', false);
+
+		function addStyleRangeToResult(lineText, htmlStart, htmlEnd, lineIndex) {
+
+			//get the position of style attribute. can be 0 if still inside style (eigth broken up by php on same line or if on multiple lines)
+			//inStyleQuote if set means we are still in the style tag from previous find
+			let styleStart = inStyleQuote !== false ? htmlStart : findStyleAttribute(lineText, htmlStart, htmlEnd);
+
+			//while inside style tag
+			while (styleStart > -1) {
+
+				//get the quote type
+				let styleQuote = inStyleQuote !== false ? inStyleQuote : lineText[styleStart - 1];
+
+				//look for end of style
+				let styleEnd = lineText.indexOf(styleQuote, styleStart);
+				if (styleEnd > htmlEnd) {
+					styleEnd = -1;
+				}
+
+				if (styleEnd > -1) {
+					//end of style found
+					inStyleQuote = false;
+				} else {
+					//style is broken up
+					inStyleQuote = styleQuote;
+				}
+
+				//store current range for style
+				result.push({
+					line: lineIndex,
+					styleStart: styleStart,
+					styleEnd: styleEnd > -1 ? styleEnd : htmlEnd,
+					//start: htmlStart,
+					//end: htmlEnd,
+					//style: line.slice(styleStart, styleEnd > -1 ? styleEnd : htmlEnd),
+					//_styleEnd: styleEnd,
+					//_inStyleQuote: inStyleQuote,
+					//html: line.slice(htmlStart, htmlEnd)
+				});
+
+				//check if any more style tags exist on same line
+				styleStart = findStyleAttribute(lineText, (styleEnd > -1 ? styleEnd : htmlEnd), htmlEnd);
+
+			}
+		}
 
 		lines.forEach(function (lineText, lineIndex) {
-
-			function addStyleRangeToResult(line, htmlStart, htmlEnd) {
-
-				//get the position of style attribute. can be 0 if still inside style (eigth broken up by php on same line or if on multiple lines)
-				//inStyleQuote if set means we are still in the style tag from previous find
-				let styleStart = inStyleQuote !== false ? htmlStart : findStyleAttribute(line, htmlStart, htmlEnd);
-
-				//while inside style tag
-				while (styleStart > -1) {
-
-					//get the quote type
-					let styleQuote = inStyleQuote !== false ? inStyleQuote : line[styleStart - 1];
-
-					//look for end of style
-					let styleEnd = line.indexOf(styleQuote, styleStart);
-					if (styleEnd > htmlEnd) {
-						styleEnd = -1;
-					}
-
-					if (styleEnd > -1) {
-						//end of style found
-						inStyleQuote = false;
-					} else {
-						//style is broken up
-						inStyleQuote = styleQuote;
-					}
-
-					//store current range for style
-					result.push({
-						line: lineIndex,
-						styleStart: styleStart,
-						styleEnd: styleEnd > -1 ? styleEnd : htmlEnd,
-						//start: htmlStart,
-						//end: htmlEnd,
-						//style: line.slice(styleStart, styleEnd > -1 ? styleEnd : htmlEnd),
-						//_styleEnd: styleEnd,
-						//_inStyleQuote: inStyleQuote,
-						//html: line.slice(htmlStart, htmlEnd)
-					});
-
-					//check if any more style tags exist on same line
-					styleStart = findStyleAttribute(line, (styleEnd > -1 ? styleEnd : htmlEnd), htmlEnd);
-
-				}
-			}
 
 			let offset = 0;
 
@@ -284,7 +283,7 @@ var InLineColor = function () {
 						//capture any html that comes before php open
 						if (offset != openPHPPos) {
 							//found HTML code
-							addStyleRangeToResult(lineText, offset, openPHPPos)
+							addStyleRangeToResult(lineText, offset, openPHPPos, lineIndex)
 						}
 
 						//look for php close tag
@@ -305,7 +304,7 @@ var InLineColor = function () {
 						//capture any html that comes before comment open
 						if (offset != openCommentPos) {
 							//found HTML code
-							addStyleRangeToResult(lineText, offset, openCommentPos)
+							addStyleRangeToResult(lineText, offset, openCommentPos, lineIndex)
 						}
 
 						//look for comment close tag
@@ -323,7 +322,7 @@ var InLineColor = function () {
 					continue;
 				} else {
 					//every thing else is valid html
-					addStyleRangeToResult(lineText, offset, lineText.length)
+					addStyleRangeToResult(lineText, offset, lineText.length, lineIndex)
 					offset = lineText.length
 				}
 
@@ -383,26 +382,26 @@ var InLineColor = function () {
 function activate(context) {
 
 	//init extension
-	let inLineColor = new InLineColor();
+	let ext = new Extension();
 
 	//init application
-	App.setContext(context);
+	app.setContext(context);
 
 	//set file types that should trigger events
-	App.setValidDocTypes(['html', 'php']);
+	app.setValidDocTypes(['html', 'php']);
 
 	//check when tab is focused and reapply decorations.
-	App.onDocumentFocus(function (document) {
-		inLineColor.applyDecorations(document);
+	app.onDocumentFocus(function (document) {
+		ext.applyDecorations(document);
 	})
 
 	//when ever text is changed reapply decorations.
-	App.onDocumentTextChange(function (event) {
-		inLineColor.applyDecorations(event.document)
+	app.onDocumentTextChange(function (event) {
+		ext.applyDecorations(event.document)
 	})
 
 	//activate application.
-	App.activate();
+	app.activate();
 }
 
 
