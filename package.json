@@ -2,7 +2,7 @@
 	"name": "inline-css-color",
 	"displayName": "Inline CSS Color",
 	"description": "Color your inline html style values to match your css theme.",
-	"version": "2.0.1",
+	"version": "2.1.0",
 	"publisher": "outofsync42",
 	"license": "MIT",
 	"repository": {
@@ -20,7 +20,8 @@
 	],
 	"activationEvents": [
 		"onLanguage:php",
-		"onLanguage:html"
+		"onLanguage:html",
+		"onLanguage:svelte"
 	],
 	"main": "./extension.js",
 	"contributes": {

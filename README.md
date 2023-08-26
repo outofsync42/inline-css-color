@@ -7,6 +7,7 @@ Inline CSS Color allows you set colors for your inline HTML style="" attributes.
 
 - HTML
 - PHP (Mixed HTML)
+- Svelte
 
 # Example
 
