@@ -11,3 +11,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ## [2.0.0]
 
 - Changed mechanism that finds valid style locations.
+
+## [2.1.0]
+
+- Updated rule mechanism that parses style locations.
+- Added support for svelte.
